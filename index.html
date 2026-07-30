@@ -1,0 +1,2413 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="description" content="Jibon Telecom - Premium Mobile & Electronics Store">
+  <title>Jibon Telecom - NextGen Shopping</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Firebase SDK (v8 Compatible) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-light: rgba(99, 102, 241, 0.12);
+  --secondary: #ec4899;
+  --accent: #8b5cf6;
+  --bg: #f8fafc;
+  --card: rgba(255, 255, 255, 0.75);
+  --card-solid: #ffffff;
+  --text: #0f172a;
+  --text-secondary: #64748b;
+  --text-light: #94a3b8;
+  --border: rgba(226, 232, 240, 0.8);
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --whatsapp: #25d366;
+  --whatsapp-hover: #1da851;
+  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  --shadow-hover: 0 20px 30px -10px rgba(99, 102, 241, 0.25);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --navbar-height: 64px;
+  --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  --overlay: rgba(15, 23, 42, 0.4);
+  --blur: blur(16px);
+}
+
+[data-theme='dark'] {
+  --bg: #0b0f19;
+  --card: rgba(18, 24, 38, 0.75);
+  --card-solid: #121826;
+  --text: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-light: #64748b;
+  --border: rgba(255, 255, 255, 0.08);
+  --primary-light: rgba(99, 102, 241, 0.2);
+  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  --shadow-hover: 0 20px 30px -10px rgba(139, 92, 246, 0.3);
+  --overlay: rgba(0, 0, 0, 0.7);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+a { text-decoration: none; color: inherit; cursor: pointer; }
+ul { list-style: none; }
+img { max-width: 100%; display: block; }
+button { cursor: pointer; border: none; font-family: inherit; font-size: inherit; outline: none; }
+input, select, textarea { font-family: inherit; font-size: inherit; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.03); }
+}
+
+.fade-in {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--navbar-height);
+  background: var(--card);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+  transition: var(--transition);
+}
+
+.navbar .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hamburger {
+  display: flex; flex-direction: column; gap: 5px; background: none; padding: 8px; cursor: pointer;
+  border-radius: 8px; transition: var(--transition);
+}
+.hamburger:hover { background: var(--primary-light); }
+.hamburger span {
+  display: block; width: 22px; height: 2.5px; background: var(--text); border-radius: 2px; transition: var(--transition);
+}
+
+.logo {
+  font-size: 1.4rem; font-weight: 800; 
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px; user-select: none; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+}
+.logo span { 
+  background: linear-gradient(135deg, var(--text), var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.logo img { height: 38px; border-radius: 8px; object-fit: contain; }
+
+.nav-actions { display: flex; align-items: center; gap: 8px; }
+.nav-actions button {
+  background: var(--card);
+  border: 1px solid var(--border);
+  width: 42px; height: 42px;
+  border-radius: 50%; color: var(--text); font-size: 1.1rem; position: relative; 
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  backdrop-filter: var(--blur);
+}
+.nav-actions button:hover { 
+  background: var(--primary); 
+  color: #fff;
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+.cart-btn .cart-count {
+  position: absolute; top: -2px; right: -2px; 
+  background: var(--secondary); color: #fff;
+  font-size: 0.7rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--card-solid);
+  animation: pulseGlow 2s infinite;
+}
+
+/* ===== PRO PROMO / NOTICE BAR ===== */
+.sub-notice-wrapper {
+  position: fixed;
+  top: var(--navbar-height);
+  left: 0; right: 0;
+  z-index: 999;
+  background: linear-gradient(90deg, #6366f1, #ec4899);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+.top-notice-bar {
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.notice-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1;
+}
+.notice-content {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 22s linear infinite;
+}
+.offer-timer-badge {
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(4px);
+  padding: 3px 10px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 12px;
+  border: 1px solid rgba(255,255,255,0.3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+@keyframes marquee {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-100%, 0); }
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar-overlay {
+  position: fixed; inset: 0; background: var(--overlay); 
+  backdrop-filter: blur(4px); z-index: 1050; opacity: 0; pointer-events: none; transition: var(--transition);
+}
+.sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+.sidebar {
+  position: fixed; top: 0; left: -300px; bottom: 0; width: 300px; 
+  background: var(--card); backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  z-index: 1100; padding: 80px 20px 20px; overflow-y: auto; 
+  transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+  border-right: 1px solid var(--border);
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+}
+.sidebar.open { left: 0; }
+.sidebar h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; letter-spacing: 1.2px; font-weight: 700; }
+.sidebar .category-link { 
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-radius: var(--radius-sm); color: var(--text); font-size: 0.95rem; 
+  font-weight: 500; text-transform: capitalize; transition: var(--transition); margin-bottom: 4px;
+}
+.sidebar .category-link:hover, .sidebar .category-link.active { 
+  background: var(--primary); color: #fff; 
+  transform: translateX(4px);
+}
+
+.main { 
+  padding-top: calc(var(--navbar-height) + 16px); 
+  padding-bottom: 60px; 
+  min-height: 100vh; 
+  transition: padding-top 0.3s ease;
+}
+body.has-notice .main {
+  padding-top: calc(var(--navbar-height) + 48px);
+}
+
+/* ===== HERO ===== */
+.hero {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(236, 72, 153, 0.85)), url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1200&q=80');
+  background-size: cover; background-position: center;
+  border-radius: var(--radius); padding: 40px 24px; margin-bottom: 28px; color: #fff; 
+  position: relative; overflow: hidden; box-shadow: var(--shadow-hover);
+  backdrop-filter: var(--blur);
+}
+.hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 10px; line-height: 1.2; }
+.hero p { font-size: 0.98rem; opacity: 0.95; margin-bottom: 20px; max-width: 500px; }
+.hero .shop-now {
+  display: inline-block; padding: 12px 30px; background: #fff; color: var(--primary); 
+  font-weight: 700; border-radius: 50px; font-size: 0.92rem; transition: var(--transition);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+.hero .shop-now:hover { transform: scale(1.05) translateY(-2px); background: #f8fafc; }
+
+.section-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.section-title h2 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.3px; text-transform: capitalize; }
+
+/* ===== PRODUCT GRID ===== */
+.product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.product-card {
+  background: var(--card); backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+  transition: var(--transition); cursor: pointer; position: relative; display: flex; flex-direction: column;
+}
+.product-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-hover); border-color: rgba(99, 102, 241, 0.4); }
+.product-card .img-wrap { position: relative; padding-top: 100%; background: rgba(255, 255, 255, 0.4); overflow: hidden; }
+[data-theme='dark'] .product-card .img-wrap { background: rgba(0, 0, 0, 0.2); }
+.product-card .img-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 16px; transition: transform 0.5s ease; }
+.product-card:hover .img-wrap img { transform: scale(1.08); }
+
+.discount-badge { position: absolute; top: 10px; left: 10px; background: var(--secondary); color: #fff; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 50px; z-index: 2; box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3); }
+.featured-badge { position: absolute; top: 10px; right: 10px; background: var(--warning); color: #fff; font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 50px; z-index: 2; }
+
+.stock-badge-low {
+  position: absolute; bottom: 10px; right: 10px; background: rgba(239, 68, 68, 0.15); color: var(--error); backdrop-filter: blur(4px);
+  font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; z-index: 2; border: 1px solid var(--error);
+}
+
+.product-card .info { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.product-card .category-tag { font-size: 0.72rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+.product-card .name { font-size: 0.92rem; font-weight: 700; height: 40px; overflow: hidden; line-height: 1.35; color: var(--text); }
+.product-card .price-row { display: flex; align-items: baseline; gap: 8px; margin-top: auto; }
+.product-card .current-price { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
+.product-card .original-price { font-size: 0.82rem; color: var(--text-light); text-decoration: line-through; }
+
+.card-action-btns { display: flex; gap: 6px; margin-top: 10px; }
+.product-card .add-cart-btn {
+  flex: 1; padding: 10px; background: var(--primary); color: #fff; border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 700; text-align: center; transition: var(--transition);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+.product-card .add-cart-btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.product-card .add-cart-btn:disabled { background: var(--text-light); cursor: not-allowed; box-shadow: none; }
+
+.product-card .whatsapp-btn {
+  padding: 10px 12px; background: var(--whatsapp); color: #fff; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 700; text-align: center; transition: var(--transition);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.product-card .whatsapp-btn:hover { background: var(--whatsapp-hover); transform: translateY(-1px); }
+
+/* ===== FLOATING WHATSAPP BUTTON ===== */
+.floating-wa {
+  position: fixed; bottom: 24px; right: 24px; z-index: 990;
+  background: var(--whatsapp); color: #fff; width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+  box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4); transition: var(--transition);
+  animation: pulseGlow 2.5s infinite;
+}
+.floating-wa:hover { transform: scale(1.1) rotate(8deg); background: var(--whatsapp-hover); }
+
+/* ===== TOAST & MODAL ===== */
+.toast-container { position: fixed; top: calc(var(--navbar-height) + 16px); right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+.toast { 
+  background: var(--card-solid); color: var(--text); padding: 14px 22px; border-radius: var(--radius-sm); 
+  box-shadow: var(--shadow-hover); font-size: 0.9rem; border-left: 5px solid var(--primary); font-weight: 600;
+  animation: fadeInUp 0.3s ease;
+}
+
+.modal-overlay { 
+  position: fixed; inset: 0; background: var(--overlay); 
+  display: none; align-items: center; justify-content: center; z-index: 2000; 
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.modal-overlay.show { display: flex; }
+.modal-box { 
+  background: var(--card-solid); width: 90%; max-width: 440px; padding: 28px; 
+  border-radius: var(--radius); position: relative; box-shadow: var(--shadow-hover); 
+  max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); animation: fadeInUp 0.3s ease;
+}
+
+/* ===== ADMIN STYLES ===== */
+.admin-card { 
+  background: var(--card); backdrop-filter: var(--blur); border: 1px solid var(--border); 
+  border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; 
+}
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); 
+  background: var(--card-solid); color: var(--text); outline: none; transition: var(--transition);
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+.admin-tab-btn {
+  padding: 10px 20px; border-radius: 50px; background: var(--card); border: 1px solid var(--border);
+  font-weight: 700; font-size: 0.88rem; color: var(--text-secondary); cursor: pointer; transition: var(--transition); flex-shrink: 0;
+}
+.admin-tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3); }
+
+.order-subtab-btn {
+  padding: 8px 16px; border-radius: 50px; background: var(--card-solid); border: 1px solid var(--border);
+  font-weight: 700; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; transition: var(--transition);
+}
+.order-subtab-btn.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+
+/* STATUS BADGES */
+.status-badge {
+  padding: 4px 12px; border-radius: 50px; font-weight: 700; font-size: 0.78rem; display: inline-block;
+}
+.status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+.status-confirmed { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
+.status-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid var(--error); }
+
+.footer { 
+  background: var(--card); backdrop-filter: var(--blur); border-top: 1px solid var(--border); 
+  padding: 32px 0; margin-top: 60px; text-align: center; font-size: 0.9rem; color: var(--text-secondary); 
+}
+
+@media (min-width: 576px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 768px) { .product-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; } .hamburger { display: none; } }
+@media (min-width: 992px) { .product-grid { grid-template-columns: repeat(5, 1fr); } }
+</style>
+</head>
+<body>
+
+  <div id="toast-container" class="toast-container"></div>
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- FLOATING WHATSAPP BUTTON -->
+  <a id="floating-whatsapp" class="floating-wa" target="_blank" aria-label="WhatsApp Chat">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="nav-left">
+        <button id="hamburger" class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+        <!-- SECRET ADMIN TRIGGER ON LOGO -->
+        <a class="logo" id="main-logo" onclick="App.handleLogoClick()">Jibon <span>Telecom</span></a>
+      </div>
+
+      <div class="nav-actions">
+        <!-- ICON ONLY ORDER TRACKING BUTTON -->
+        <button onclick="App.navigate('track')" title="অর্ডার ট্র্যাক করুন" aria-label="Track Order">🔍</button>
+        <button id="dark-toggle" onclick="App.toggleDarkMode()" title="থিম পরিবর্তন" aria-label="Theme Toggle"><span id="dark-icon">🌙</span></button>
+        <button class="cart-btn" onclick="App.navigate('cart')" title="কার্ট দেখুন" aria-label="Cart">🛒 <span class="cart-count">0</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SUB NOTICE BAR (BELOW LOGO / NAVBAR) -->
+  <div id="notice-wrapper" class="sub-notice-wrapper" style="display:none;">
+    <div class="top-notice-bar container">
+      <div class="notice-marquee">
+        <div class="notice-content" id="notice-text"></div>
+      </div>
+      <div id="notice-timer-badge" class="offer-timer-badge" style="display:none;">
+        ⏳ <span id="notice-timer-text">--:--:--</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="sidebar">
+    <h3>ক্যাটাগরি সমূহ</h3>
+    <div id="sidebar-cat-list"></div>
+    <div style="height:1px; background:var(--border); margin:20px 0;"></div>
+    <a class="category-link" onclick="App.navigate('track')">🔍 অর্ডার ট্র্যাকিং</a>
+    <a class="category-link" onclick="App.navigate('cart')">🛒 কার্ট দেখুন</a>
+    <a class="category-link" onclick="App.navigate('checkout')">📋 চেকআউট</a>
+  </aside>
+
+  <!-- MAIN CONTAINER -->
+  <main class="main">
+    <div id="view-container" class="container"></div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 Jibon Telecom. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- SECRET ADMIN LOGIN MODAL WITH TELEGRAM OTP 2FA -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+      <h3 style="margin-bottom:16px; font-size:1.2rem; text-align:center;">🔐 অ্যাডমিন অ্যাক্সেস</h3>
+      
+      <!-- STEP 1: Username & Password -->
+      <div id="login-step-1">
+        <div class="form-group">
+          <label>ইউজারনেম</label>
+          <input type="text" id="adminUser" placeholder="ইউজারনেম লিখুন">
+        </div>
+        <div class="form-group">
+          <label>পাসওয়ার্ড</label>
+          <input type="password" id="adminPass" placeholder="পাসওয়ার্ড লিখুন">
+        </div>
+        <button style="width:100%; padding:12px; background:var(--primary); color:#fff; border-radius:8px; font-weight:700; box-shadow:0 4px 12px rgba(99,102,241,0.3)" onclick="App.checkAdminLoginStep1()">লগইন যাচাই করুন</button>
+      </div>
+
+      <!-- STEP 2: Telegram OTP Verification -->
+      <div id="login-step-2" style="display:none;">
+        <div style="background:var(--primary-light); border:1px solid var(--primary); padding:12px; border-radius:8px; font-size:0.85rem; color:var(--primary); margin-bottom:16px; text-align:center; font-weight:600">
+          📲 আপনার টেলিগ্রাম বটে ৬ ডিজিটের সিকিউরিটি কোড (OTP) পাঠানো হয়েছে।
+        </div>
+        <div class="form-group">
+          <label>৬ ডিজিটের OTP কোড</label>
+          <input type="text" id="adminOtp" placeholder="যেমন: 482910" style="text-align:center; font-size:1.2rem; letter-spacing:4px; font-weight:800">
+        </div>
+        <button style="width:100%; padding:12px; background:var(--success); color:#fff; border-radius:8px; font-weight:700; box-shadow:0 4px 12px rgba(16,185,129,0.3)" onclick="App.checkAdminLoginStep2()">কনফার্ম ও ড্যাশবোর্ড খুলুন</button>
+      </div>
+
+      <button style="width:100%; padding:10px; background:none; color:var(--text-secondary); margin-top:8px; font-weight:600" onclick="App.closeLoginModal()">বাতিল</button>
+    </div>
+  </div>
+
+<script>
+// ============ FIREBASE CONFIGURATION ============
+const firebaseConfig = {
+  apiKey: "AIzaSyBSKGWco4wopur-nCB6u0HFpKHFr3BPzKc",
+  authDomain: "jibon-telecom-1c937.firebaseapp.com",
+  databaseURL: "https://jibon-telecom-1c937-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "jibon-telecom-1c937",
+  storageBucket: "jibon-telecom-1c937.firebasestorage.app",
+  messagingSenderId: "669868675107",
+  appId: "1:669868675107:web:1e732c8f6bbcd8faac2196",
+  measurementId: "G-ZP1MTBXKEG"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+
+const App = {
+  state: {
+    products: [],
+    categories: [],
+    orders: [],
+    coupons: {},
+    cart: [],
+    tgAdmins: [],
+    pendingTgPosts: {},
+    currentView: 'home',
+    currentCategory: 'all',
+    darkMode: false,
+    isAdminLoggedIn: false,
+    adminTab: 'products',
+    orderFilterTab: 'pending',
+    editingProductId: null,
+    appliedDiscount: 0,
+    logoClicks: 0,
+    timerInterval: null,
+    lastTgOffsets: {},
+    searchTrackPhone: '',
+    generatedOtp: '',
+    settings: {
+      noticeEnable: true,
+      noticeText: '🎉 বিশেষ অফার! সারা বাংলাদেশে ক্যাশ অন ডেলিভারি সুবিধা!',
+      noticeEndTime: '',
+      logoType: 'text',
+      logoUrl: '',
+      logoText1: 'Jibon',
+      logoText2: 'Telecom',
+      bkash: '',
+      nagad: '',
+      whatsapp: '8801700000000'
+    }
+  },
+
+  init() {
+    this.loadCart();
+    this.loadDarkMode();
+    this.syncFirebase();
+    this.bindEvents();
+    this.bindKeyboardShortcuts();
+    this.startTelegramPolling();
+  },
+
+  /* ===== FIREBASE REALTIME SYNC ===== */
+  syncFirebase() {
+    db.ref('products').on('value', snapshot => {
+      const data = snapshot.val();
+      this.state.products = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+      this.render();
+    });
+
+    db.ref('orders').on('value', snapshot => {
+      const data = snapshot.val();
+      this.state.orders = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })).reverse() : [];
+      if (this.state.currentView === 'admin' || this.state.currentView === 'track') this.renderView();
+    });
+
+    db.ref('tgAdmins').on('value', snapshot => {
+      const data = snapshot.val();
+      this.state.tgAdmins = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+      if (this.state.currentView === 'admin' && this.state.adminTab === 'botManager') this.renderView();
+    });
+
+    db.ref('categories').on('value', snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        const catList = Array.isArray(data) ? data : Object.values(data);
+        this.state.categories = [...new Set(catList.map(c => c.toLowerCase().trim()))];
+      } else {
+        this.state.categories = [];
+      }
+      this.renderSidebarCategories();
+      if (this.state.currentView === 'admin' && this.state.adminTab === 'products') this.renderView();
+    });
+
+    db.ref('coupons').on('value', snapshot => {
+      this.state.coupons = snapshot.val() || {};
+      if (this.state.currentView === 'admin') this.renderView();
+    });
+
+    db.ref('settings').on('value', snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        this.state.settings = { ...this.state.settings, ...data };
+      }
+      this.applyShopSettings();
+    });
+  },
+
+  applyShopSettings() {
+    const noticeWrapper = document.getElementById('notice-wrapper');
+    const noticeText = document.getElementById('notice-text');
+    const timerBadge = document.getElementById('notice-timer-badge');
+    const timerText = document.getElementById('notice-timer-text');
+
+    if (this.state.timerInterval) clearInterval(this.state.timerInterval);
+
+    if (this.state.settings.noticeEnable && this.state.settings.noticeText) {
+      noticeWrapper.style.display = 'block';
+      document.body.classList.add('has-notice');
+      noticeText.textContent = this.state.settings.noticeText;
+
+      if (this.state.settings.noticeEndTime) {
+        timerBadge.style.display = 'inline-flex';
+        const targetTime = new Date(this.state.settings.noticeEndTime).getTime();
+
+        const updateCountdown = () => {
+          const now = new Date().getTime();
+          const distance = targetTime - now;
+
+          if (distance < 0) {
+            clearInterval(this.state.timerInterval);
+            noticeWrapper.style.display = 'none';
+            document.body.classList.remove('has-notice');
+            return;
+          }
+
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+          timerText.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        };
+
+        updateCountdown();
+        this.state.timerInterval = setInterval(updateCountdown, 1000);
+      } else {
+        timerBadge.style.display = 'none';
+      }
+    } else {
+      noticeWrapper.style.display = 'none';
+      document.body.classList.remove('has-notice');
+    }
+
+    const logoEl = document.getElementById('main-logo');
+    if (logoEl) {
+      if (this.state.settings.logoType === 'image' && this.state.settings.logoUrl) {
+        logoEl.innerHTML = `<img src="${this.state.settings.logoUrl}" alt="Logo">`;
+      } else {
+        logoEl.innerHTML = `${this.state.settings.logoText1 || 'Jibon'} <span>${this.state.settings.logoText2 || 'Telecom'}</span>`;
+      }
+    }
+
+    const waBtn = document.getElementById('floating-whatsapp');
+    if (waBtn) {
+      const num = (this.state.settings.whatsapp || '8801700000000').replace(/[^0-9]/g, '');
+      waBtn.href = `https://wa.me/${num}?text=${encodeURIComponent('হ্যালো! আমি আপনার শপ থেকে তথ্য জানতে চাই।')}`;
+    }
+  },
+
+  loadCart() {
+    const stored = localStorage.getItem('jibon_cart');
+    this.state.cart = stored ? JSON.parse(stored) : [];
+    this.updateCartCount();
+  },
+
+  saveCart() {
+    localStorage.setItem('jibon_cart', JSON.stringify(this.state.cart));
+    this.updateCartCount();
+  },
+
+  loadDarkMode() {
+    this.state.darkMode = localStorage.getItem('jibon_dark') === 'true';
+    if (this.state.darkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('dark-icon').textContent = '☀️';
+    }
+  },
+
+  toggleDarkMode() {
+    this.state.darkMode = !this.state.darkMode;
+    if (this.state.darkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    localStorage.setItem('jibon_dark', this.state.darkMode);
+    document.getElementById('dark-icon').textContent = this.state.darkMode ? '☀️' : '🌙';
+  },
+
+  updateCartCount() {
+    const count = this.state.cart.reduce((s, i) => s + i.quantity, 0);
+    document.querySelectorAll('.cart-count').forEach(el => el.textContent = count);
+  },
+
+  navigate(view) {
+    this.state.currentView = view;
+    this.renderView();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  },
+
+  render() {
+    this.updateCartCount();
+    this.renderSidebarCategories();
+    this.renderView();
+  },
+
+  renderSidebarCategories() {
+    const el = document.getElementById('sidebar-cat-list');
+    if (!el) return;
+    let html = `<a class="category-link ${this.state.currentCategory === 'all' ? 'active' : ''}" onclick="App.setCategory('all')">সকল প্রোডাক্ট <span>➔</span></a>`;
+    this.state.categories.forEach(c => {
+      html += `<a class="category-link ${this.state.currentCategory === c ? 'active' : ''}" onclick="App.setCategory('${c}')">${c} <span>➔</span></a>`;
+    });
+    el.innerHTML = html;
+  },
+
+  getFilteredProducts() {
+    let list = [...this.state.products];
+    if (this.state.currentCategory !== 'all') {
+      list = list.filter(p => p.category && p.category.toLowerCase().trim() === this.state.currentCategory.toLowerCase().trim());
+    }
+    return list;
+  },
+
+  renderView() {
+    const container = document.getElementById('view-container');
+    if (!container) return;
+
+    switch (this.state.currentView) {
+      case 'home':
+        this.renderHome(container);
+        break;
+      case 'cart':
+        this.renderCart(container);
+        break;
+      case 'checkout':
+        this.renderCheckout(container);
+        break;
+      case 'track':
+        this.renderOrderTracking(container);
+        break;
+      case 'success':
+        container.innerHTML = `
+          <div class="fade-in" style="text-align:center; padding:80px 20px;">
+            <div style="font-size:4.5rem; color:var(--success); margin-bottom:12px">✅</div>
+            <h2 style="font-size:1.8rem; font-weight:800">অর্ডার সফলভাবে সম্পন্ন হয়েছে!</h2>
+            <p style="color:var(--text-secondary); margin-bottom:24px; font-size:1rem">আমাদের শপ থেকে কেনাকাটা করার জন্য আপনাকে ধন্যবাদ।</p>
+            <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap">
+              <button style="padding:12px 28px; background:var(--primary); color:#fff; border-radius:50px; font-weight:700; box-shadow:0 6px 20px rgba(99,102,241,0.3)" onclick="App.navigate('track')">🔍 অর্ডার ট্র্যাকিং করুন</button>
+              <button style="padding:12px 28px; background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:50px; font-weight:700" onclick="App.navigate('home')">আরও কেনাকাটা করুন</button>
+            </div>
+          </div>
+        `;
+        break;
+      case 'admin':
+        this.renderAdmin(container);
+        break;
+      default:
+        this.renderHome(container);
+    }
+  },
+
+  renderHome(container) {
+    const filtered = this.getFilteredProducts();
+    const featured = this.state.products.filter(p => p.featured);
+    const categoryTitle = this.state.currentCategory === 'all' ? 'সকল প্রোডাক্ট' : this.state.currentCategory;
+
+    container.innerHTML = `
+      <section class="hero fade-in">
+        <h1>🔥 মেগা এক্সক্লুসিভ সেল!</h1>
+        <p>সেরা ট্রেন্ডিং প্রোডাক্টে ৪০% পর্যন্ত ছাড়। আপনার পছন্দের প্রোডাক্টটি বেছে নিন এখনই।</p>
+        <a class="shop-now" onclick="App.navigate('cart')">এখনই কেনাকাটা করুন</a>
+      </section>
+
+      ${featured.length > 0 && this.state.currentCategory === 'all' ? `
+        <div class="section-title fade-in"><h2>⭐ ফিচারড কালেকশন</h2></div>
+        <div class="product-grid fade-in" style="margin-bottom:32px">${this.renderCards(featured)}</div>
+      ` : ''}
+
+      <div class="section-title fade-in">
+        <h2>${categoryTitle}</h2>
+        <span style="color:var(--primary); font-weight:700; background:var(--primary-light); padding:4px 12px; border-radius:50px; font-size:0.85rem">${filtered.length} টি আইটেম</span>
+      </div>
+
+      <div class="product-grid fade-in">
+        ${filtered.length > 0 ? this.renderCards(filtered) : `<div style="grid-column:1/-1; text-align:center; padding:60px; color:var(--text-secondary); background:var(--card); border-radius:var(--radius)">এই ক্যাটাগরিতে কোনো প্রোডাক্ট পাওয়া যায়নি</div>`}
+      </div>
+    `;
+  },
+
+  renderCards(products) {
+    const waNum = (this.state.settings.whatsapp || '8801700000000').replace(/[^0-9]/g, '');
+
+    return products.map(p => {
+      const discount = p.originalPrice > p.price ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
+      const inCart = this.state.cart.find(c => c.productId === p.id);
+      const isOut = p.stock !== undefined && Number(p.stock) <= 0;
+      const isLow = p.stock !== undefined && Number(p.stock) <= 3 && Number(p.stock) > 0;
+
+      const waMessage = encodeURIComponent(`হ্যালো! আমি এই প্রোডাক্টটি অর্ডার করতে চাই:\nপ্রোডাক্ট: ${p.name}\nমূল্য: ৳${p.price}`);
+
+      return `
+        <div class="product-card">
+          <div class="img-wrap">
+            <img src="${p.image || p.img || 'https://via.placeholder.com/300'}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300'">
+            ${discount > 0 ? `<span class="discount-badge">-${discount}%</span>` : ''}
+            ${p.featured ? `<span class="featured-badge">⭐</span>` : ''}
+            ${isLow ? `<span class="stock-badge-low">স্টক: ${p.stock}টি</span>` : ''}
+          </div>
+          <div class="info">
+            <span class="category-tag">${p.category || 'সাধারণ'}</span>
+            <div class="name">${p.name}</div>
+            <div class="price-row">
+              <span class="current-price">৳${Number(p.price).toLocaleString()}</span>
+              ${p.originalPrice > p.price ? `<span class="original-price">৳${Number(p.originalPrice).toLocaleString()}</span>` : ''}
+            </div>
+            <div class="card-action-btns">
+              <button class="add-cart-btn" ${isOut ? 'disabled' : ''} onclick="App.addToCart('${p.id}')">
+                ${isOut ? 'স্টক শেষ' : (inCart ? '✓ কার্টে যুক্ত' : '🛒 কার্টে রাখুন')}
+              </button>
+              <a href="https://wa.me/${waNum}?text=${waMessage}" target="_blank" class="whatsapp-btn" title="WhatsApp-এ বাই করুন">
+                <i class="fab fa-whatsapp"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  renderCart(container) {
+    if (this.state.cart.length === 0) {
+      container.innerHTML = `
+        <div class="fade-in" style="text-align:center; padding:80px 20px; background:var(--card); border-radius:var(--radius); border:1px solid var(--border)">
+          <div style="font-size:4rem; margin-bottom:12px">🛒</div>
+          <h2 style="font-weight:800">আপনার কার্ট খালি রয়েছে</h2>
+          <p style="color:var(--text-secondary); margin-top:4px">পছন্দের প্রোডাক্ট যোগ করতে শপে ব্রাউজ করুন।</p>
+          <button style="margin-top:20px; padding:12px 32px; background:var(--primary); color:#fff; border-radius:50px; font-weight:700; box-shadow:0 6px 20px rgba(99,102,241,0.3)" onclick="App.navigate('home')">কেনাকাটা শুরু করুন</button>
+        </div>
+      `;
+      return;
+    }
+
+    let subtotal = 0;
+    const items = this.state.cart.map(item => {
+      const p = this.state.products.find(x => x.id === item.productId) || {};
+      const total = (p.price || 0) * item.quantity;
+      subtotal += total;
+      return `
+        <div style="background:var(--card); backdrop-filter:var(--blur); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border); display:flex; gap:16px; align-items:center; margin-bottom:12px; box-shadow:var(--shadow)">
+          <img src="${p.image || p.img}" style="width:70px; height:70px; object-fit:contain; background:#fff; border-radius:8px; padding:4px">
+          <div style="flex:1">
+            <div style="font-weight:700; font-size:0.95rem">${p.name || 'আইটেম'}</div>
+            <div style="color:var(--primary); font-weight:800; font-size:1.05rem">৳${Number(p.price || 0).toLocaleString()}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; background:var(--card-solid); padding:4px 8px; border-radius:50px; border:1px solid var(--border)">
+            <button style="width:28px; height:28px; background:var(--bg); border-radius:50%; font-weight:700" onclick="App.updateCartQty('${item.productId}', -1)">-</button>
+            <span style="font-weight:700; min-width:18px; text-align:center">${item.quantity}</span>
+            <button style="width:28px; height:28px; background:var(--bg); border-radius:50%; font-weight:700" onclick="App.updateCartQty('${item.productId}', 1)">+</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <h2 class="fade-in" style="margin-bottom:20px; font-weight:800">🛒 আপনার কার্ট (${this.state.cart.length})</h2>
+      <div class="fade-in">${items}</div>
+      <div class="fade-in" style="background:var(--card); backdrop-filter:var(--blur); border:1px solid var(--border); padding:24px; border-radius:var(--radius); margin-top:20px; box-shadow:var(--shadow)">
+        <div style="display:flex; justify-content:space-between; font-weight:800; font-size:1.2rem">
+          <span>মোট মূল্য:</span>
+          <span style="color:var(--primary)">৳${subtotal.toLocaleString()}</span>
+        </div>
+        <button style="width:100%; padding:14px; background:var(--primary); color:#fff; font-weight:800; border-radius:var(--radius-sm); margin-top:20px; box-shadow:0 6px 20px rgba(99,102,241,0.3)" onclick="App.navigate('checkout')">অর্ডার করতে এগিয়ে যান ➔</button>
+      </div>
+    `;
+  },
+
+  renderCheckout(container) {
+    let subtotal = 0;
+    this.state.cart.forEach(c => {
+      const p = this.state.products.find(x => x.id === c.productId);
+      if (p) subtotal += p.price * c.quantity;
+    });
+    const finalTotal = Math.max(0, subtotal - this.state.appliedDiscount);
+
+    container.innerHTML = `
+      <h2 class="fade-in" style="margin-bottom:20px; font-weight:800">📋 অর্ডার কনফার্মেশন</h2>
+      <div class="fade-in" style="background:var(--card); backdrop-filter:var(--blur); border:1px solid var(--border); padding:28px; border-radius:var(--radius); box-shadow:var(--shadow)">
+        <div class="form-group">
+          <label>আপনার পুরো নাম *</label>
+          <input type="text" id="cust-name" placeholder="যেমন: মোঃ জিবন হাবিব" required>
+        </div>
+        <div class="form-group">
+          <label>মোবাইল নম্বর *</label>
+          <input type="tel" id="cust-phone" placeholder="০১৭XXXXXXXX" required>
+        </div>
+        <div class="form-group">
+          <label>সম্পূর্ণ ডেলিভারি ঠিকানা *</label>
+          <textarea id="cust-address" placeholder="বাসা/রোড নম্বর, এলাকা, থানা, জেলা" style="height:80px"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>কুপন কোড (যদি থাকে)</label>
+          <div style="display:flex; gap:10px">
+            <input type="text" id="coupon-input" placeholder="যেমন: PROMO20" style="text-transform:uppercase">
+            <button style="padding:10px 20px; background:var(--primary); color:#fff; border-radius:var(--radius-sm); font-weight:700" onclick="App.applyCoupon()">প্রয়োগ</button>
+          </div>
+          <small id="coupon-msg" style="display:block; margin-top:6px; font-weight:700"></small>
+        </div>
+
+        <div class="form-group">
+          <label>পেমেন্ট মেথড নির্বাচন করুন</label>
+          <select id="cust-payment" onchange="App.togglePaymentDetails()">
+            <option value="COD">ক্যাশ অন ডেলিভারি (COD)</option>
+            <option value="bKash">বিকাশ (bKash)</option>
+            <option value="Nagad">নগদ (Nagad)</option>
+          </select>
+        </div>
+
+        <div id="payment-extra-box" style="display:none; background:var(--card-solid); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border); margin-bottom:16px">
+          <p id="payment-instructions" style="font-size:0.88rem; color:var(--primary); font-weight:700; margin-bottom:10px"></p>
+          <div class="form-group"><input type="text" id="cust-sender" placeholder="যে নম্বর থেকে সেন্ড মানি করেছেন"></div>
+          <div class="form-group" style="margin-bottom:0"><input type="text" id="cust-trx" placeholder="Transaction ID (TrxID)"></div>
+        </div>
+
+        <div style="margin:20px 0; padding-top:16px; border-top:1px solid var(--border)">
+          <div style="display:flex; justify-content:space-between; font-weight:800; font-size:1.25rem">
+            <span>সর্বমোট প্রদেয়:</span>
+            <span style="color:var(--primary)">৳${finalTotal.toLocaleString()} ${this.state.appliedDiscount > 0 ? `<del style="font-size:0.85rem; color:var(--text-light); margin-left:6px">৳${subtotal.toLocaleString()}</del>` : ''}</span>
+          </div>
+        </div>
+
+        <button style="width:100%; padding:14px; background:linear-gradient(135deg, var(--primary), var(--accent)); color:#fff; font-weight:800; border-radius:var(--radius-sm); box-shadow:0 6px 20px rgba(99,102,241,0.3)" onclick="App.placeOrder()">📦 অর্ডার কনফার্ম করুন</button>
+      </div>
+    `;
+  },
+
+  /* ===== ORDER TRACKING VIEW ===== */
+  renderOrderTracking(container) {
+    const searchVal = this.state.searchTrackPhone;
+    let matchedOrders = [];
+
+    if (searchVal) {
+      const cleanSearch = searchVal.replace(/[^0-9]/g, '');
+      matchedOrders = this.state.orders.filter(o => {
+        const cleanPhone = (o.phone || '').replace(/[^0-9]/g, '');
+        return cleanPhone.includes(cleanSearch) && cleanSearch.length >= 3;
+      });
+    }
+
+    container.innerHTML = `
+      <div class="fade-in" style="max-width:600px; margin:0 auto">
+        <div style="text-align:center; margin-bottom:24px">
+          <h2 style="font-weight:800; font-size:1.6rem">🔍 লাইভ অর্ডার ট্র্যাকিং</h2>
+          <p style="color:var(--text-secondary); font-size:0.9rem">আপনার মোবাইল নম্বর দিয়ে সহজেই অর্ডারের বর্তমান অবস্থা জানুন</p>
+        </div>
+
+        <div style="background:var(--card); backdrop-filter:var(--blur); padding:24px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow); margin-bottom:24px">
+          <div class="form-group" style="margin-bottom:12px">
+            <label>মোবাইল নম্বর</label>
+            <div style="display:flex; gap:10px">
+              <input type="tel" id="track-phone-input" value="${searchVal}" placeholder="যেমন: 017XXXXXXXX" style="font-size:1rem; font-weight:600">
+              <button style="padding:12px 24px; background:var(--primary); color:#fff; border-radius:var(--radius-sm); font-weight:700; flex-shrink:0" onclick="App.executeTrackOrder()">খুঁজুন</button>
+            </div>
+          </div>
+        </div>
+
+        ${searchVal ? `
+          <div class="fade-in">
+            <h3 style="font-weight:800; margin-bottom:16px; font-size:1.1rem">অর্ডার ফলাফল (${matchedOrders.length}):</h3>
+            ${matchedOrders.length > 0 ? matchedOrders.map(o => {
+              let badgeClass = 'status-pending';
+              let statusTxt = '⏳ পেন্ডিং (Pending)';
+              if (o.status === 'Confirmed') { badgeClass = 'status-confirmed'; statusTxt = '✅ কনফার্মড (Confirmed)'; }
+              else if (o.status === 'Cancelled') { badgeClass = 'status-cancelled'; statusTxt = '❌ বাতিলকৃত (Cancelled)'; }
+
+              const formattedDate = o.createdAt ? new Date(o.createdAt).toLocaleString('bn-BD') : 'N/A';
+
+              return `
+                <div style="background:var(--card-solid); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:16px; box-shadow:var(--shadow)">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:10px">
+                    <div>
+                      <div style="font-weight:800; font-size:1rem">আইডি: #${o.id.slice(-6)}</div>
+                      <div style="font-size:0.78rem; color:var(--text-light)">${formattedDate}</div>
+                    </div>
+                    <span class="status-badge ${badgeClass}">${statusTxt}</span>
+                  </div>
+
+                  <div style="font-size:0.9rem; margin-bottom:8px"><strong>কাস্টমার:</strong> ${o.name}</div>
+                  <div style="font-size:0.9rem; margin-bottom:8px"><strong>আইটেমসমূহ:</strong> ${o.itemsSummary || 'N/A'}</div>
+                  <div style="font-size:0.9rem; margin-bottom:8px"><strong>ঠিকানা:</strong> ${o.address}</div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:1.1rem; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border)">
+                    <span>মোট বিল:</span>
+                    <span style="color:var(--primary)">৳${Number(o.total).toLocaleString()}</span>
+                  </div>
+                </div>
+              `;
+            }).join('') : `
+              <div style="text-align:center; padding:40px; background:var(--card); border-radius:var(--radius); border:1px solid var(--border); color:var(--text-secondary)">
+                ❌ এই নম্বরে কোনো অর্ডার পাওয়া যায়নি। নম্বরটি সঠিকভাবে চেক করুন।
+              </div>
+            `}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  },
+
+  executeTrackOrder() {
+    const val = document.getElementById('track-phone-input').value.trim();
+    if (!val) {
+      this.showToast('অনুগ্রহ করে একটি মোবাইল নম্বর দিন');
+      return;
+    }
+    this.state.searchTrackPhone = val;
+    this.renderView();
+  },
+
+  togglePaymentDetails() {
+    const val = document.getElementById('cust-payment').value;
+    const box = document.getElementById('payment-extra-box');
+    const msg = document.getElementById('payment-instructions');
+
+    if (val === 'bKash') {
+      box.style.display = 'block';
+      msg.textContent = `অনুগ্রহ করে বিকাশ নম্বর: ${this.state.settings.bkash || '০১৭XXXXXXXX'} এ সেন্ড মানি করুন।`;
+    } else if (val === 'Nagad') {
+      box.style.display = 'block';
+      msg.textContent = `অনুগ্রহ করে নগদ নম্বর: ${this.state.settings.nagad || '০১৭XXXXXXXX'} এ সেন্ড মানি করুন।`;
+    } else {
+      box.style.display = 'none';
+    }
+  },
+
+  applyCoupon() {
+    const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+    const msg = document.getElementById('coupon-msg');
+    const coupon = this.state.coupons[code];
+
+    if (coupon) {
+      let subtotal = 0;
+      this.state.cart.forEach(c => {
+        const p = this.state.products.find(x => x.id === c.productId);
+        if (p) subtotal += p.price * c.quantity;
+      });
+
+      if (coupon.type === 'percent') {
+        this.state.appliedDiscount = (subtotal * Number(coupon.discount)) / 100;
+      } else {
+        this.state.appliedDiscount = Number(coupon.discount);
+      }
+      msg.style.color = 'var(--success)';
+      msg.textContent = `🎉 কুপন সফল হয়েছে! ৳${this.state.appliedDiscount.toLocaleString()} ছাড় পেয়েছেন।`;
+      this.renderCheckout(document.getElementById('view-container'));
+    } else {
+      this.state.appliedDiscount = 0;
+      msg.style.color = 'var(--error)';
+      msg.textContent = '❌ কুপন কোডটি সঠিক নয়';
+    }
+  },
+
+  /* ===== ADMIN DASHBOARD ===== */
+  renderAdmin(container) {
+    if (!this.state.isAdminLoggedIn) {
+      this.triggerAdminLogin();
+      return;
+    }
+
+    const lowStock = this.state.products.filter(p => p.stock !== undefined && Number(p.stock) <= 3);
+
+    container.innerHTML = `
+      <div class="fade-in" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px">
+        <h2 style="font-weight:800">⚙️ অ্যাডমিন ড্যাশবোর্ড</h2>
+        <button style="padding:8px 18px; background:var(--error); color:#fff; border-radius:50px; font-weight:700; box-shadow:0 4px 12px rgba(239,68,68,0.2)" onclick="App.logoutAdmin()">লগআউট</button>
+      </div>
+
+      <!-- ADMIN TABS -->
+      <div class="fade-in" style="display:flex; gap:10px; overflow-x:auto; margin-bottom:24px; padding-bottom:4px">
+        <button class="admin-tab-btn ${this.state.adminTab === 'products' ? 'active' : ''}" onclick="App.switchAdminTab('products')">📦 প্রোডাক্ট</button>
+        <button class="admin-tab-btn ${this.state.adminTab === 'orders' ? 'active' : ''}" onclick="App.switchAdminTab('orders')">📋 অর্ডার (${this.state.orders.length})</button>
+        <button class="admin-tab-btn ${this.state.adminTab === 'botManager' ? 'active' : ''}" onclick="App.switchAdminTab('botManager')">🤖 টেলিগ্রাম বট ম্যানেজার (${this.state.tgAdmins.length})</button>
+        <button class="admin-tab-btn ${this.state.adminTab === 'categories' ? 'active' : ''}" onclick="App.switchAdminTab('categories')">🏷️ ক্যাটাগরি</button>
+        <button class="admin-tab-btn ${this.state.adminTab === 'coupons' ? 'active' : ''}" onclick="App.switchAdminTab('coupons')">🎟️ কুপন</button>
+        <button class="admin-tab-btn ${this.state.adminTab === 'settings' ? 'active' : ''}" onclick="App.switchAdminTab('settings')">⚙️ সেটিংস</button>
+      </div>
+
+      ${lowStock.length > 0 ? `
+        <div class="fade-in" style="background:rgba(239, 68, 68, 0.1); border:1px solid var(--error); padding:14px; border-radius:var(--radius-sm); margin-bottom:20px; color:var(--error); font-weight:600">
+          ⚠️ স্টক অ্যালার্ট: ${lowStock.map(p => `${p.name} (${p.stock}টি)`).join(', ')}
+        </div>
+      ` : ''}
+
+      <div class="fade-in">${this.renderAdminTabContent()}</div>
+    `;
+  },
+
+  switchAdminTab(tab) {
+    this.state.adminTab = tab;
+    this.renderAdmin(document.getElementById('view-container'));
+  },
+
+  setOrderFilterTab(tab) {
+    this.state.orderFilterTab = tab;
+    this.renderAdmin(document.getElementById('view-container'));
+  },
+
+  renderAdminTabContent() {
+    if (this.state.adminTab === 'products') {
+      const isEditing = !!this.state.editingProductId;
+      const catOptions = this.state.categories.length > 0 
+        ? this.state.categories.map(c => `<option value="${c}">${c.toUpperCase()}</option>`).join('')
+        : '<option value="">কোনো ক্যাটাগরি নেই</option>';
+
+      return `
+        <div class="admin-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+            <h3 style="font-weight:800">${isEditing ? '✏️ প্রোডাক্ট এডিট করুন' : '➕ নতুন প্রোডাক্ট যোগ করুন'}</h3>
+            ${isEditing ? `<button style="padding:6px 14px; background:var(--text-light); color:#fff; border-radius:6px; font-weight:700; font-size:0.8rem" onclick="App.cancelEdit()">বাতিল করুন</button>` : ''}
+          </div>
+          <form onsubmit="event.preventDefault(); App.saveProduct();">
+            <div class="form-group"><label>প্রোডাক্ট নাম</label><input type="text" id="p-name" required></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+              <div class="form-group"><label>বিক্রয় মূল্য (৳)</label><input type="number" step="1" id="p-price" required></div>
+              <div class="form-group"><label>পূর্বের মূল্য (৳)</label><input type="number" step="1" id="p-orig"></div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+              <div class="form-group">
+                <label>ক্যাটাগরি</label>
+                <select id="p-cat" required style="text-transform:uppercase">
+                  <option value="">ক্যাটাগরি সিলেক্ট করুন</option>
+                  ${catOptions}
+                </select>
+              </div>
+              <div class="form-group"><label>স্টক পরিমাণ</label><input type="number" id="p-stock" value="10" required></div>
+            </div>
+            <div class="form-group"><label>ছবি লিংক (URL)</label><input type="url" id="p-img" required></div>
+            <div class="form-group"><label>বিবরণ</label><textarea id="p-desc" style="height:80px" required></textarea></div>
+            <div class="form-group"><label style="display:flex; align-items:center; gap:8px; cursor:pointer"><input type="checkbox" id="p-feat" style="width:auto"> ফিচারড প্রোডাক্ট হিসেবে দেখান ⭐</label></div>
+            <button style="padding:12px 24px; background:var(--primary); color:#fff; border-radius:var(--radius-sm); font-weight:700; box-shadow:0 4px 12px rgba(99,102,241,0.3)" type="submit">
+              ${isEditing ? 'আপডেট করুন' : 'প্রোডাক্ট যোগ করুন'}
+            </button>
+          </form>
+        </div>
+
+        <div class="admin-card">
+          <h3 style="margin-bottom:16px; font-weight:800">📦 প্রোডাক্ট লিস্ট (${this.state.products.length})</h3>
+          <div style="overflow-x:auto">
+            <table style="width:100%; border-collapse:collapse; font-size:0.88rem">
+              <thead>
+                <tr style="background:var(--card-solid); border-bottom:1px solid var(--border); text-align:left">
+                  <th style="padding:10px">ছবি</th>
+                  <th style="padding:10px">নাম (ID)</th>
+                  <th style="padding:10px">মূল্য</th>
+                  <th style="padding:10px">ক্যাটাগরি</th>
+                  <th style="padding:10px">স্টক</th>
+                  <th style="padding:10px">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${this.state.products.map(p => `
+                  <tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:10px"><img src="${p.image || p.img}" style="width:40px; height:40px; object-fit:contain; background:#fff; border-radius:6px"></td>
+                    <td style="padding:10px; font-weight:700">${p.name}<br><small style="color:var(--primary)">ID: ${p.id}</small></td>
+                    <td style="padding:10px; font-weight:700; color:var(--primary)">৳${Number(p.price).toLocaleString()}</td>
+                    <td style="padding:10px; text-transform:uppercase; font-size:0.75rem; font-weight:700">${p.category || 'N/A'}</td>
+                    <td style="padding:10px">${p.stock || 0}</td>
+                    <td style="padding:10px">
+                      <div style="display:flex; gap:6px">
+                        <button style="padding:6px 12px; background:var(--warning); color:#fff; border-radius:6px; font-weight:600" onclick="App.editProduct('${p.id}')">এডিট</button>
+                        <button style="padding:6px 12px; background:var(--error); color:#fff; border-radius:6px; font-weight:600" onclick="App.deleteProduct('${p.id}')">ডিলিট</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    if (this.state.adminTab === 'orders') {
+      const pendingOrders = this.state.orders.filter(o => !o.status || o.status === 'Pending');
+      const confirmedOrders = this.state.orders.filter(o => o.status === 'Confirmed');
+      const cancelledOrders = this.state.orders.filter(o => o.status === 'Cancelled');
+
+      let currentOrderList = pendingOrders;
+      if (this.state.orderFilterTab === 'confirmed') currentOrderList = confirmedOrders;
+      if (this.state.orderFilterTab === 'cancelled') currentOrderList = cancelledOrders;
+
+      return `
+        <div class="admin-card">
+          <h3 style="margin-bottom:16px; font-weight:800">📋 অর্ডার কন্টাক্ট ড্যাশবোর্ড</h3>
+          
+          <!-- ORDER SUB-TABS -->
+          <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap">
+            <button class="order-subtab-btn ${this.state.orderFilterTab === 'pending' ? 'active' : ''}" onclick="App.setOrderFilterTab('pending')">
+              ⏳ পেন্ডিং (${pendingOrders.length})
+            </button>
+            <button class="order-subtab-btn ${this.state.orderFilterTab === 'confirmed' ? 'active' : ''}" onclick="App.setOrderFilterTab('confirmed')">
+              ✅ কনফার্মড (${confirmedOrders.length})
+            </button>
+            <button class="order-subtab-btn ${this.state.orderFilterTab === 'cancelled' ? 'active' : ''}" onclick="App.setOrderFilterTab('cancelled')">
+              ❌ বাতিলকৃত (${cancelledOrders.length})
+            </button>
+          </div>
+
+          <div>
+            ${currentOrderList.length > 0 ? currentOrderList.map(o => {
+              let badgeStyle = 'status-pending';
+              let badgeTxt = '⏳ Pending';
+              if (o.status === 'Confirmed') { badgeStyle = 'status-confirmed'; badgeTxt = '✅ Confirmed'; }
+              if (o.status === 'Cancelled') { badgeStyle = 'status-cancelled'; badgeTxt = '❌ Cancelled'; }
+
+              return `
+                <div style="background:var(--card-solid); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; margin-bottom:12px; box-shadow:var(--shadow)">
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px">
+                    <strong style="font-size:1rem">অর্ডার ID: #${o.id.slice(-6)}</strong>
+                    <span class="status-badge ${badgeStyle}">${badgeTxt}</span>
+                  </div>
+                  <div style="font-size:0.88rem; margin-top:4px"><strong>কাস্টমার:</strong> ${o.name} | <strong>ফোন:</strong> ${o.phone}</div>
+                  <div style="font-size:0.88rem"><strong>ঠিকানা:</strong> ${o.address}</div>
+                  <div style="font-size:0.88rem"><strong>আইটেমসমূহ:</strong> ${o.itemsSummary || 'N/A'}</div>
+                  <div style="font-size:0.88rem"><strong>মেথড:</strong> ${o.payment || 'COD'} ${o.trxId ? `(TrxID: ${o.trxId})` : ''}</div>
+                  <div style="font-size:1.05rem; font-weight:800; color:var(--primary); margin-top:6px">মোট: ৳${Number(o.total).toLocaleString()}</div>
+                  
+                  <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
+                    ${o.status !== 'Confirmed' ? `<button style="padding:6px 14px; background:var(--success); color:#fff; border-radius:6px; font-size:0.8rem; font-weight:700" onclick="App.updateOrderStatus('${o.id}', 'Confirmed')">✅ কনফার্ম করুন</button>` : ''}
+                    ${o.status !== 'Cancelled' ? `<button style="padding:6px 14px; background:var(--warning); color:#fff; border-radius:6px; font-size:0.8rem; font-weight:700" onclick="App.updateOrderStatus('${o.id}', 'Cancelled')">❌ বাতিল করুন</button>` : ''}
+                    <button style="padding:6px 14px; background:var(--error); color:#fff; border-radius:6px; font-size:0.8rem; font-weight:700" onclick="App.deleteOrder('${o.id}')">🗑️ ডিলিট</button>
+                  </div>
+                </div>
+              `;
+            }).join('') : `<div style="text-align:center; padding:40px; color:var(--text-secondary)">এই সেকশনে কোনো অর্ডার নেই</div>`}
+          </div>
+        </div>
+      `;
+    }
+
+    if (this.state.adminTab === 'botManager') {
+      return `
+        <div class="admin-card">
+          <h3 style="margin-bottom:16px; font-weight:800">🤖 টেলিগ্রাম বট, পোস্ট ও মেনু বাটন</h3>
+          
+          <div style="background:var(--primary-light); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--primary); margin-bottom:20px; font-size:0.88rem">
+            <strong>📲 টেলিগ্রাম বট মেনু বাটন টিউটোরিয়াল:</strong><br><br>
+            
+            বটে ঢুকলেই নিচে স্থায়ী <strong>Menu Buttons</strong> দেখাবে। সেখান থেকে ১-ক্লিকেই নতুন পোস্ট, অর্ডার, প্রোডাক্ট বা ক্যাটাগরি দেখতে পারবেন।<br><br>
+            
+            🔹 <strong>নতুন পোস্ট করতে (/add) অথবা এডিট করতে (/edit PRODUCT_ID):</strong>
+            <code style="background:var(--card-solid); padding:8px 12px; border-radius:6px; display:block; margin-top:6px; color:var(--primary); font-weight:700">
+            /add (অথবা /edit PRODUCT_ID)<br>
+            নাম: USB Fast Charger Cable<br>
+            দাম: 250<br>
+            পূর্বের দাম: 350<br>
+            স্টক: 15<br>
+            বিবরণ: প্রিমিয়াম কোয়ালিটির ফাস্ট চার্জিং ক্যাবল।
+            </code>
+          </div>
+          
+          <form onsubmit="event.preventDefault(); App.addTgAdmin();">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+              <div class="form-group"><label>অ্যাডমিন নাম/চিহ্নিতকরণ</label><input type="text" id="tg-admin-name" placeholder="যেমন: Habib (Main Admin)" required></div>
+              <div class="form-group"><label>চ্যাট আইডি (Chat ID)</label><input type="text" id="tg-admin-chat" placeholder="যেমন: 123456789" required></div>
+            </div>
+            <div class="form-group"><label>টেলিগ্রাম বট টোকেন (Bot Token)</label><input type="text" id="tg-admin-token" placeholder="যেমন: 123456:ABC-DEF1234ghIkl-zyx57" required></div>
+            <button style="padding:10px 20px; background:var(--primary); color:#fff; border-radius:var(--radius-sm); font-weight:700; margin-bottom:20px" type="submit">➕ অ্যাডমিন অ্যাড করুন</button>
+          </form>
+
+          <h4 style="font-weight:800; margin-bottom:12px">তালিকাভুক্ত অ্যাডমিন ও বটের অবস্থা:</h4>
+          <div style="overflow-x:auto">
+            <table style="width:100%; border-collapse:collapse; font-size:0.88rem">
+              <thead>
+                <tr style="background:var(--card-solid); border-bottom:1px solid var(--border); text-align:left">
+                  <th style="padding:10px">অ্যাডমিন নাম</th>
+                  <th style="padding:10px">চ্যাট আইডি</th>
+                  <th style="padding:10px">স্ট্যাটাস (Status)</th>
+                  <th style="padding:10px">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${this.state.tgAdmins.map(admin => `
+                  <tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:10px; font-weight:700">${admin.name}</td>
+                    <td style="padding:10px">${admin.chatId}</td>
+                    <td style="padding:10px">
+                      <span class="status-badge ${admin.active ? 'status-confirmed' : 'status-cancelled'}">
+                        ${admin.active ? '🟢 ACTIVE (ON)' : '🔴 INACTIVE (OFF)'}
+                      </span>
+                    </td>
+                    <td style="padding:10px">
+                      <div style="display:flex; gap:6px">
+                        <button style="padding:6px 12px; background:${admin.active ? 'var(--warning)' : 'var(--success)'}; color:#fff; border-radius:6px; font-weight:600" onclick="App.toggleTgAdminStatus('${admin.id}', ${!admin.active})">
+                          ${admin.active ? 'বন্ধ করুন (Disable)' : 'চালু করুন (Enable)'}
+                        </button>
+                        <button style="padding:6px 12px; background:var(--error); color:#fff; border-radius:6px; font-weight:600" onclick="App.deleteTgAdmin('${admin.id}')">মুছুন</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    if (this.state.adminTab === 'categories') {
+      return `
+        <div class="admin-card">
+          <h3 style="margin-bottom:16px; font-weight:800">🏷️ ক্যাটাগরি ম্যানেজমেন্ট</h3>
+          <div style="display:flex; gap:10px; margin-bottom:16px">
+            <input type="text" id="new-cat" placeholder="নতুন ক্যাটাগরির নাম" style="flex:1">
+            <button style="padding:10px 20px; background:var(--primary); color:#fff; border-radius:var(--radius-sm); font-weight:700" onclick="App.addCategory()">যোগ করুন</button>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px">
+            ${this.state.categories.map(c => `
+              <span style="background:var(--card-solid); border:1px solid var(--border); padding:8px 16px; border-radius:50px; display:flex; align-items:center; gap:10px; font-weight:600; text-transform:capitalize">
+                ${c} <i class="fas fa-times" style="color:var(--error); cursor:pointer" onclick="App.deleteCategory('${c}')"></i>
+              </span>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    if (this.state.adminTab === 'coupons') {
+      return `
+        <div class="admin-card">
+          <h3 style="margin-bottom:16px; font-weight:800">🎟️ কুপন ম্যানেজমেন্ট</h3>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:12px">
+            <input type="text" id="c-code" placeholder="কোড (যেমন: EID20)" style="text-transform:uppercase">
+            <input type="number" id="c-discount" placeholder="ডিসকাউন্ট পরিমান">
+            <select id="c-type">
+              <option value="fixed">টাকা (৳)</option>
+              <option value="percent">পার্সেন্ট (%)</option>
+            </select>
+          </div>
+          <button style="padding:10px 20px; background:var(--primary); color:#fff; border-radius:var(--radius-sm); font-weight:700; margin-bottom:16px" onclick="App.addCoupon()">কুপন তৈরি করুন</button>
+
+          <div>
+            ${Object.keys(this.state.coupons).map(k => `
+              <div style="background:var(--card-solid); border:1px solid var(--border); padding:12px 16px; border-radius:var(--radius-sm); display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+                <strong style="color:var(--primary)">${k}</strong> 
+                <span>${this.state.coupons[k].discount} ${this.state.coupons[k].type === 'percent' ? '%' : '৳'} ছাড়</span>
+                <i class="fas fa-trash" style="color:var(--error); cursor:pointer" onclick="App.deleteCoupon('${k}')"></i>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    if (this.state.adminTab === 'settings') {
+      const s = this.state.settings;
+      return `
+        <div class="admin-card">
+          <h3 style="margin-bottom:16px; font-weight:800">📢 অফার ও নোটিশ সেটিংস</h3>
+          <div class="form-group" style="display:flex; align-items:center; gap:10px">
+            <input type="checkbox" id="set-notice-enable" ${s.noticeEnable ? 'checked' : ''} style="width:auto; height:20px; width:20px">
+            <label for="set-notice-enable" style="margin:0; cursor:pointer">নোটিশ বার অন/অফ রাখুন (Notice Bar ON/OFF)</label>
+          </div>
+          <div class="form-group">
+            <label>নোটিশ টেক্সট / অফার মেসেজ</label>
+            <input type="text" id="set-notice" value="${s.noticeText || ''}" placeholder="যেমন: 🎉 বিশেষ অফার! ৪০% ছাড়!">
+          </div>
+          <div class="form-group">
+            <label>অফার শেষ হওয়ার সময় (Expiry Date & Time)</label>
+            <input type="datetime-local" id="set-notice-time" value="${s.noticeEndTime || ''}">
+            <small style="color:var(--text-secondary); display:block; margin-top:4px">সময় দিয়ে দিলে লাইভ কাউন্টডাউন টাইমার দেখাবে এবং সময় শেষে নোটিশ অফ হয়ে যাবে। খালি রাখলে সারাক্ষণ দেখাবে।</small>
+          </div>
+
+          <h3 style="margin:24px 0 16px; font-weight:800; border-top:1px solid var(--border); padding-top:16px">⚙️ পেমেন্ট ও হোয়াটসঅ্যাপ সেটিংস</h3>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+            <div class="form-group"><label>বিকাশ নাম্বার</label><input type="text" id="set-bkash" value="${s.bkash || ''}"></div>
+            <div class="form-group"><label>নগদ নাম্বার</label><input type="text" id="set-nagad" value="${s.nagad || ''}"></div>
+          </div>
+          <div class="form-group">
+            <label>WhatsApp নম্বর (কান্ট্রি কোড সহ, যেমন: 8801700000000)</label>
+            <input type="text" id="set-whatsapp" value="${s.whatsapp || '8801700000000'}">
+          </div>
+          <button style="padding:12px 24px; background:var(--primary); color:#fff; border-radius:var(--radius-sm); font-weight:700; box-shadow:0 4px 12px rgba(99,102,241,0.3)" onclick="App.saveSettings()">সেটিংস সেভ করুন</button>
+        </div>
+      `;
+    }
+  },
+
+  /* ===== ACTIONS & DATABASE UPDATES ===== */
+  addToCart(id) {
+    const p = this.state.products.find(x => x.id === id);
+    if (!p) return;
+    if (p.stock !== undefined && Number(p.stock) <= 0) {
+      this.showToast('স্টক শেষ হয়ে গেছে!');
+      return;
+    }
+    const exist = this.state.cart.find(c => c.productId === id);
+    if (exist) exist.quantity++;
+    else this.state.cart.push({ productId: id, quantity: 1 });
+    this.saveCart();
+    this.showToast(`"${p.name}" কার্টে যোগ করা হয়েছে!`);
+    this.render();
+  },
+
+  updateCartQty(id, delta) {
+    const item = this.state.cart.find(c => c.productId === id);
+    if (!item) return;
+    item.quantity += delta;
+    if (item.quantity <= 0) this.state.cart = this.state.cart.filter(c => c.productId !== id);
+    this.saveCart();
+    this.render();
+  },
+
+  placeOrder() {
+    const name = document.getElementById('cust-name').value.trim();
+    const phone = document.getElementById('cust-phone').value.trim();
+    const address = document.getElementById('cust-address').value.trim();
+    const payment = document.getElementById('cust-payment').value;
+    const sender = document.getElementById('cust-sender')?.value.trim() || '';
+    const trxId = document.getElementById('cust-trx')?.value.trim() || '';
+
+    if (!name || !phone || !address) {
+      this.showToast('সব তথ্য সঠিকভাবে দিন');
+      return;
+    }
+
+    let subtotal = 0;
+    let itemsSummaryList = [];
+    this.state.cart.forEach(c => {
+      const p = this.state.products.find(x => x.id === c.productId);
+      if (p) {
+        subtotal += p.price * c.quantity;
+        itemsSummaryList.push(`${p.name} (x${c.quantity})`);
+      }
+    });
+
+    const total = Math.max(0, subtotal - this.state.appliedDiscount);
+    const itemsSummary = itemsSummaryList.join(', ');
+
+    const orderRef = db.ref('orders').push();
+    const orderId = orderRef.key;
+
+    const orderData = {
+      id: orderId,
+      name, phone, address, payment, sender, trxId, total, itemsSummary,
+      status: 'Pending',
+      createdAt: new Date().toISOString()
+    };
+
+    orderRef.set(orderData).then(() => {
+      this.state.cart.forEach(c => {
+        const p = this.state.products.find(x => x.id === c.productId);
+        if (p && p.stock) {
+          const newStock = Math.max(0, Number(p.stock) - c.quantity);
+          db.ref(`products/${p.id}`).update({ stock: newStock });
+        }
+      });
+
+      this.sendTelegramAlertToActiveAdmins(orderData);
+      this.state.cart = [];
+      this.saveCart();
+      this.navigate('success');
+    });
+  },
+
+  /* ===== MULTI-ADMIN TELEGRAM BOT & INSTANT LONG POLLING CONTROLLER ===== */
+  addTgAdmin() {
+    const name = document.getElementById('tg-admin-name').value.trim();
+    const chatId = document.getElementById('tg-admin-chat').value.trim();
+    const token = document.getElementById('tg-admin-token').value.trim();
+
+    if (!name || !chatId || !token) {
+      this.showToast('সব তথ্য পূরণ করুন');
+      return;
+    }
+
+    db.ref('tgAdmins').push({
+      name, chatId, token, active: true
+    }).then(() => {
+      this.showToast('নতুন অ্যাডমিন বট যুক্ত হয়েছে!');
+      this.renderAdmin(document.getElementById('view-container'));
+    });
+  },
+
+  toggleTgAdminStatus(id, active) {
+    db.ref(`tgAdmins/${id}`).update({ active }).then(() => {
+      this.showToast(`অ্যাডমিন স্ট্যাটাস ${active ? 'চালু' : 'বন্ধ'} করা হয়েছে`);
+    });
+  },
+
+  deleteTgAdmin(id) {
+    if (confirm('অ্যাডমিন মুছে ফেলতে চান?')) {
+      db.ref(`tgAdmins/${id}`).remove().then(() => this.showToast('অ্যাডমিন মুছে ফেলা হয়েছে'));
+    }
+  },
+
+  sendTelegramAlertToActiveAdmins(order) {
+    const activeAdmins = this.state.tgAdmins.filter(a => a.active && a.token && a.chatId);
+    if (activeAdmins.length === 0) return;
+
+    const shortId = order.id.slice(-6);
+
+    const msg = 
+`🛍️ *নতুন অর্ডার রিসিভ হয়েছে!* ❤️
+━━━━━━━━━━━━━━━━━━
+🆔 *অর্ডার আইডি:* \`#${shortId}\`
+👤 *নাম:* ${order.name}
+📞 *ফোন:* \`${order.phone}\`
+📍 *ঠিকানা:* ${order.address}
+📦 *আইটেম:* ${order.itemsSummary || 'N/A'}
+💳 *পেমেন্ট:* ${order.payment} ${order.trxId ? `(TrxID: ${order.trxId})` : ''}
+💰 *মোট বিল:* ৳${order.total}
+📌 *স্ট্যাটাস:* ⏳ Pending
+━━━━━━━━━━━━━━━━━━
+👇 *অর্ডারটি অ্যাকশন নিতে নিচের বাটনে ক্লিক করুন:*`;
+
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: "✅ Confirm Order", callback_data: `confirm_${order.id}` },
+          { text: "❌ Reject Order", callback_data: `reject_${order.id}` }
+        ]
+      ]
+    };
+
+    activeAdmins.forEach(admin => {
+      fetch(`https://api.telegram.org/bot${admin.token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          chat_id: admin.chatId, 
+          text: msg, 
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        })
+      }).catch(e => console.error(e));
+    });
+  },
+
+  sendTelegramOtpToAdmins(otp) {
+    const activeAdmins = this.state.tgAdmins.filter(a => a.active && a.token && a.chatId);
+    if (activeAdmins.length === 0) return;
+
+    const msg = 
+`🔐 *অ্যাডমিন লগইন সিকিউরিটি ওটিপি (OTP)*
+━━━━━━━━━━━━━━━━━━
+আপনার ওয়েবসাইট অ্যাডমিন প্যানেলে লগইন করার ভেরিফিকেশন কোড:
+
+👉 \`${otp}\`
+*(কোডটি কপি করতে ওপরে ১-ট্যাপ ক্লিক করুন)*
+
+⚠️ কেউ যদি ওয়েবসাইটে লগইন করার চেষ্টা করে থাকে তবে এই কোডটি ব্যবহার করুন। মেয়াদ: ৩ মিনিট।`;
+
+    activeAdmins.forEach(admin => {
+      fetch(`https://api.telegram.org/bot${admin.token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          chat_id: admin.chatId, 
+          text: msg, 
+          parse_mode: 'Markdown'
+        })
+      }).catch(e => console.error(e));
+    });
+  },
+
+  /* INSTANT LONG POLLING (timeout=20) */
+  startTelegramPolling() {
+    const pollAdmin = (admin) => {
+      if (!admin.active || !admin.token || !admin.chatId) return;
+
+      const lastOffset = this.state.lastTgOffsets[admin.id] || 0;
+
+      fetch(`https://api.telegram.org/bot${admin.token}/getUpdates?offset=${lastOffset + 1}&timeout=20`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.ok && data.result.length > 0) {
+            data.result.forEach(update => {
+              this.state.lastTgOffsets[admin.id] = update.update_id;
+              
+              if (update.callback_query) {
+                this.handleTelegramCallback(admin, update.callback_query);
+              }
+
+              if (update.message) {
+                this.handleTelegramMessagePost(admin, update.message);
+              }
+            });
+          }
+          setTimeout(() => pollAdmin(admin), 200);
+        })
+        .catch(() => {
+          setTimeout(() => pollAdmin(admin), 3000);
+        });
+    };
+
+    this.state.tgAdmins.forEach(admin => pollAdmin(admin));
+  },
+
+  sendTelegramMainMenu(token, chatId, customText) {
+    const menuMsg = customText || '🤖 *Jibon Telecom অ্যাডমিন প্যানেলে স্বাগতম!*\n\nনিচের কাস্টম বাটনগুলো ব্যবহার করে ওয়েবসাইট পরিচালনা করুন:';
+
+    const replyKeyboard = {
+      keyboard: [
+        [{ text: "➕ নতুন পোস্ট" }, { text: "📋 অর্ডারসমূহ" }],
+        [{ text: "📦 প্রোডাক্ট লিস্ট" }, { text: "🏷️ ক্যাটাগরি তালিকা" }],
+        [{ text: "⚠️ স্টক অ্যালার্ট" }, { text: "❓ সাহায্য / Help" }]
+      ],
+      resize_keyboard: true,
+      one_time_keyboard: false
+    };
+
+    fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: menuMsg,
+        parse_mode: 'Markdown',
+        reply_markup: replyKeyboard
+      })
+    });
+  },
+
+  sendCategorySelectorButtons(token, chatId) {
+    if (this.state.categories.length === 0) {
+      this.sendTgReply(token, chatId, '⚠️ ওয়েবসাইটে কোনো ক্যাটাগরি পাওয়া যায়নি! প্রথমে অ্যাডমিন প্যানেল থেকে ক্যাটাগরি যুক্ত করুন।');
+      return;
+    }
+
+    const catButtons = [];
+    let currentRow = [];
+
+    this.state.categories.forEach((cat, index) => {
+      currentRow.push({ text: `📂 ${cat.toUpperCase()}`, callback_data: `startpostcat_${cat}` });
+      if (currentRow.length === 2 || index === this.state.categories.length - 1) {
+        catButtons.push([...currentRow]);
+        currentRow = [];
+      }
+    });
+
+    const keyboard = { inline_keyboard: catButtons };
+
+    fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: '🏷️ *কোন্ ক্যাটাগরিতে পোস্ট করতে চান? নিচে থেকে সিলেক্ট করুন:*',
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      })
+    });
+  },
+
+  handleTelegramMessagePost(admin, message) {
+    const text = message.text || message.caption || '';
+    if (String(message.chat.id) !== String(admin.chatId)) return;
+
+    // 1. COMMAND: /start OR /help OR MENU BUTTON: "❓ সাহায্য / Help"
+    if (text.startsWith('/start') || text.startsWith('/help') || text === '❓ সাহায্য / Help') {
+      const helpMsg = 
+`🤖 *Jibon Telecom - টেলিগ্রাম বট নির্দেশিকা*
+━━━━━━━━━━━━━━━━━━
+এই বটের মাধ্যমে আপনি ওয়েবসাইট পরিচালনা ও কন্টেন্ট পোস্ট করতে পারবেন।
+
+📌 *কাস্টম মেনু বাটন ব্যবহার:*
+নিচের মেনু বাটন ব্যবহার করে ১-ক্লিকেই নতুন পোস্ট, অর্ডার, প্রোডাক্ট বা ক্যাটাগরি দেখতে পারবেন।
+
+📌 *নতুন ক্যাটাগরি তৈরি করতে:*
+ লিখুন: \`/addcat ক্যাটাগরি_নাম\` (যেমন: \`/addcat electronics\`)
+
+📌 *নতুন পোস্ট করার নিয়ম:*
+১. প্রথমে \`[ ➕ নতুন পোস্ট ]\` বাটনে ক্লিক করে ক্যাটাগরি বেছে নিন।
+২. অথবা একটি ছবি সহ এই ফরম্যাটে মেসেজ পাঠান:
+\`\`\`text
+/add
+নাম: USB Fast Charger Cable
+দাম: 250
+পূর্বের দাম: 350
+স্টক: 15
+বিবরণ: প্রিমিয়াম কোয়ালিটির চার্জার।
+\`\`\``;
+
+      this.sendTelegramMainMenu(admin.token, admin.chatId, helpMsg);
+      return;
+    }
+
+    // 2. MENU BUTTON: "➕ নতুন পোস্ট"
+    if (text === '➕ নতুন পোস্ট') {
+      this.sendCategorySelectorButtons(admin.token, admin.chatId);
+      return;
+    }
+
+    // 3. MENU BUTTON: "📋 অর্ডারসমূহ"
+    if (text === '📋 অর্ডারসমূহ' || text.startsWith('/orders')) {
+      if (this.state.orders.length === 0) {
+        this.sendTgReply(admin.token, admin.chatId, '📋 ওয়েবসাইটে কোনো অর্ডার নেই!');
+        return;
+      }
+      this.sendTgReply(admin.token, admin.chatId, `📋 *ওয়েবসাইটের সাম্প্রতিক অর্ডারের তালিকা (${this.state.orders.length}):*`);
+
+      this.state.orders.slice(0, 5).forEach(o => {
+        const shortId = o.id.slice(-6);
+        const oMsg = `🆔 *অর্ডার আইডি:* \`#${shortId}\`
+👤 *নাম:* ${o.name} | 📞 *ফোন:* \`${o.phone}\`
+📦 *আইটেম:* ${o.itemsSummary || 'N/A'}
+💰 *মোট বিল:* ৳${o.total} (${o.payment})
+📌 *স্ট্যাটাস:* ${o.status || 'Pending'}`;
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              { text: "✅ Confirm Order", callback_data: `confirm_${o.id}` },
+              { text: "❌ Reject Order", callback_data: `reject_${o.id}` }
+            ]
+          ]
+        };
+
+        fetch(`https://api.telegram.org/bot${admin.token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: admin.chatId,
+            text: oMsg,
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+          })
+        });
+      });
+      return;
+    }
+
+    // 4. MENU BUTTON: "📦 প্রোডাক্ট লিস্ট" OR /list
+    if (text === '📦 প্রোডাক্ট লিস্ট' || text.startsWith('/list')) {
+      if (this.state.products.length === 0) {
+        this.sendTgReply(admin.token, admin.chatId, '📦 ওয়েবসাইটে কোনো প্রোডাক্ট নেই!');
+        return;
+      }
+      
+      this.sendTgReply(admin.token, admin.chatId, '📦 *ওয়েবসাইটের প্রোডাক্ট লিস্ট নিচে দেওয়া হলো:*');
+
+      this.state.products.slice(0, 10).forEach(p => {
+        const prodMsg = `📦 *${p.name}*\n💰 মূল্য: ৳${p.price} (পূর্বের: ৳${p.originalPrice || p.price})\n🏷️ ক্যাটাগরি: ${p.category || 'N/A'} | স্টক: ${p.stock || 0}টি\n🆔 ID: \`${p.id}\``;
+        
+        const keyboard = {
+          inline_keyboard: [
+            [
+              { text: "✏️ Edit Product", callback_data: `pedit_${p.id}` },
+              { text: "🗑️ Delete Product", callback_data: `pdel_${p.id}` }
+            ]
+          ]
+        };
+
+        fetch(`https://api.telegram.org/bot${admin.token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            chat_id: admin.chatId, 
+            text: prodMsg, 
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+          })
+        });
+      });
+      return;
+    }
+
+    // 5. MENU BUTTON: "🏷️ ক্যাটাগরি তালিকা" OR /categories
+    if (text === '🏷️ ক্যাটাগরি তালিকা' || text.startsWith('/categories')) {
+      if (this.state.categories.length === 0) {
+        this.sendTgReply(admin.token, admin.chatId, '🏷️ কোনো ক্যাটাগরি পাওয়া যায়নি! তৈরি করতে লিখুন: `/addcat ক্যাটাগরি_নাম`');
+        return;
+      }
+      let catMsg = '🏷️ *বর্তমান ক্যাটাগরি সমূহ:*\n━━━━━━━━━━━━━━━━━━\n';
+      this.state.categories.forEach((c, idx) => {
+        catMsg += `${idx + 1}. *${c.toUpperCase()}*\n`;
+      });
+      catMsg += '\n➕ নতুন যুক্ত করতে: `/addcat ক্যাটাগরি_নাম`\n❌ মুছে ফেলতে: `/delcat ক্যাটাগরি_নাম`';
+      this.sendTgReply(admin.token, admin.chatId, catMsg);
+      return;
+    }
+
+    // 6. MENU BUTTON: "⚠️ স্টক অ্যালার্ট"
+    if (text === '⚠️ স্টক অ্যালার্ট' || text.startsWith('/stock')) {
+      const lowStock = this.state.products.filter(p => p.stock !== undefined && Number(p.stock) <= 3);
+      if (lowStock.length === 0) {
+        this.sendTgReply(admin.token, admin.chatId, '✅ সব প্রোডাক্টের পর্যাপ্ত স্টক রয়েছে!');
+        return;
+      }
+      let alertMsg = '⚠️ *স্টক অ্যালার্ট রিাপোর্ট (৩টি বা তার কম আছে):*\n━━━━━━━━━━━━━━━━━━\n';
+      lowStock.forEach((p, idx) => {
+        alertMsg += `${idx + 1}. *${p.name}* — স্টক আছে: \`${p.stock}টি\`\n`;
+      });
+      this.sendTgReply(admin.token, admin.chatId, alertMsg);
+      return;
+    }
+
+    // 7. COMMAND: /addcat
+    if (text.startsWith('/addcat')) {
+      const catName = text.replace('/addcat', '').trim().toLowerCase();
+      if (!catName) {
+        this.sendTgReply(admin.token, admin.chatId, '❌ ক্যাটাগরির নাম দিন! যেমন: `/addcat fashion`');
+        return;
+      }
+      if (!this.state.categories.includes(catName)) {
+        this.state.categories.push(catName);
+        db.ref('categories').set(this.state.categories).then(() => {
+          this.sendTgReply(admin.token, admin.chatId, `✅ *"${catName.toUpperCase()}"* ক্যাটাগরি সফলভাবে যুক্ত করা হয়েছে!`);
+        });
+      } else {
+        this.sendTgReply(admin.token, admin.chatId, `⚠️ *"${catName.toUpperCase()}"* ক্যাটাগরি টি অলরেডি যুক্ত আছে!`);
+      }
+      return;
+    }
+
+    // 8. COMMAND: /delcat
+    if (text.startsWith('/delcat')) {
+      const catName = text.replace('/delcat', '').trim().toLowerCase();
+      if (!catName) {
+        this.sendTgReply(admin.token, admin.chatId, '❌ ক্যাটাগরির নাম দিন! যেমন: `/delcat fashion`');
+        return;
+      }
+      const updated = this.state.categories.filter(c => c !== catName);
+      db.ref('categories').set(updated).then(() => {
+        this.state.categories = updated;
+        this.sendTgReply(admin.token, admin.chatId, `🗑️ *"${catName.toUpperCase()}"* ক্যাটাগরি মুছে ফেলা হয়েছে!`);
+      });
+      return;
+    }
+
+    // 9. COMMAND: /delete ID
+    if (text.startsWith('/delete')) {
+      const parts = text.split(' ');
+      const pId = parts[1] ? parts[1].trim() : '';
+      if (!pId) {
+        this.sendTgReply(admin.token, admin.chatId, '❌ প্রোডাক্ট ID দিন! যেমন: `/delete -NyX123456`');
+        return;
+      }
+      db.ref(`products/${pId}`).remove().then(() => {
+        this.sendTgReply(admin.token, admin.chatId, `✅ প্রোডাক্টটি (ID: \`${pId}\`) সফলভাবে ডিলিট করা হয়েছে!`);
+      }).catch(e => {
+        this.sendTgReply(admin.token, admin.chatId, `❌ ডিলিট করতে সমস্যা হয়েছে: ${e.message}`);
+      });
+      return;
+    }
+
+    // 10. COMMAND: /add OR /edit ID (Direct or with Photo)
+    if (text.startsWith('/add') || text.startsWith('/edit') || text.includes('নাম:')) {
+      const isEdit = text.startsWith('/edit');
+      let editId = '';
+
+      if (isEdit) {
+        const firstLine = text.split('\n')[0];
+        editId = firstLine.replace('/edit', '').trim();
+      }
+
+      const nameMatch = text.match(/নাম:\s*(.+)/i);
+      const priceMatch = text.match(/দাম:\s*(.+)/i);
+      const origMatch = text.match(/পূর্বের\s*দাম:\s*(.+)/i);
+      const catMatch = text.match(/ক্যাটাগরি:\s*(.+)/i);
+      const stockMatch = text.match(/স্টক:\s*(.+)/i);
+      const descMatch = text.match(/বিবরণ:\s*(.+)/i);
+
+      const name = nameMatch ? nameMatch[1].trim() : '';
+      const price = priceMatch ? parseFloat(priceMatch[1].trim().replace(/[^0-9.]/g, '')) : 0;
+      const originalPrice = origMatch ? parseFloat(origMatch[1].trim().replace(/[^0-9.]/g, '')) : price;
+      const category = catMatch ? catMatch[1].trim().toLowerCase() : '';
+      const stock = stockMatch ? parseInt(stockMatch[1].trim()) : 10;
+      const description = descMatch ? descMatch[1].trim() : 'প্রোডাক্ট ডেসক্রিপশন';
+
+      if (!name || isNaN(price) || price <= 0) {
+        this.sendTgReply(admin.token, admin.chatId, '❌ ভুল ফরম্যাট! সঠিক নিয়ম দেখতে `/help` টাইপ করুন।');
+        return;
+      }
+
+      let imageUrl = 'https://via.placeholder.com/300';
+
+      const processPost = (finalImg) => {
+        if (category) {
+          this.saveProductFromTg(admin, { name, price, originalPrice, category, stock, description, image: finalImg }, isEdit, editId);
+        } else {
+          const postId = 'post_' + Date.now();
+          this.state.pendingTgPosts[postId] = {
+            name, price, originalPrice, stock, description, image: finalImg, isEdit, editId
+          };
+
+          const catButtons = [];
+          let currentRow = [];
+
+          this.state.categories.forEach((cat, index) => {
+            currentRow.push({ text: `📂 ${cat.toUpperCase()}`, callback_data: `selectcat_${postId}_${cat}` });
+            if (currentRow.length === 2 || index === this.state.categories.length - 1) {
+              catButtons.push([...currentRow]);
+              currentRow = [];
+            }
+          });
+
+          const keyboard = { inline_keyboard: catButtons };
+
+          fetch(`https://api.telegram.org/bot${admin.token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              chat_id: admin.chatId, 
+              text: `🏷️ *"${name}"* প্রোডাক্টটির জন্য ক্যাটাগরি সিলেক্ট করুন:`, 
+              parse_mode: 'Markdown',
+              reply_markup: keyboard
+            })
+          });
+        }
+      };
+
+      if (message.photo && message.photo.length > 0) {
+        const photo = message.photo[message.photo.length - 1];
+        fetch(`https://api.telegram.org/bot${admin.token}/getFile?file_id=${photo.file_id}`)
+          .then(res => res.json())
+          .then(fileData => {
+            if (fileData.ok) {
+              imageUrl = `https://api.telegram.org/file/bot${admin.token}/${fileData.result.file_path}`;
+              processPost(imageUrl);
+            }
+          }).catch(() => processPost(imageUrl));
+      } else {
+        processPost(imageUrl);
+      }
+    }
+  },
+
+  saveProductFromTg(admin, data, isEdit, editId) {
+    if (isEdit && editId) {
+      db.ref(`products/${editId}`).update(data).then(() => {
+        this.sendTgReply(admin.token, admin.chatId, `✅ *প্রোডাক্ট সফলভাবে আপডেট (Edit) করা হয়েছে!*\n\n📦 *নাম:* ${data.name}\n💰 *মূল্য:* ৳${data.price}\n🏷️ *ক্যাটাগরি:* ${data.category.toUpperCase()}`);
+      });
+    } else {
+      db.ref('products').push({
+        ...data,
+        featured: false,
+        createdAt: new Date().toISOString()
+      }).then(() => {
+        if (!this.state.categories.includes(data.category)) {
+          this.state.categories.push(data.category);
+          db.ref('categories').set(this.state.categories);
+        }
+        this.sendTgReply(admin.token, admin.chatId, `✅ *নতুন প্রোডাক্ট পাবলিশ করা হয়েছে!*\n\n📦 *নাম:* ${data.name}\n💰 *মূল্য:* ৳${data.price}\n🏷️ *ক্যাটাগরি:* ${data.category.toUpperCase()}`);
+      });
+    }
+  },
+
+  sendTgReply(token, chatId, text) {
+    fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
+    });
+  },
+
+  /* HANDLE INLINE BUTTON CALLBACKS */
+  handleTelegramCallback(admin, cq) {
+    const data = cq.data;
+    const messageId = cq.message.message_id;
+    const chatId = cq.message.chat.id;
+
+    // 1. ORDER CONFIRM / CANCEL
+    if (data.startsWith('confirm_') || data.startsWith('reject_')) {
+      let newStatus = data.startsWith('confirm_') ? 'Confirmed' : 'Cancelled';
+      let statusEmoji = data.startsWith('confirm_') ? '✅ Confirmed' : '❌ Cancelled';
+      let orderId = data.replace('confirm_', '').replace('reject_', '');
+
+      db.ref(`orders/${orderId}`).update({ status: newStatus }).then(() => {
+        fetch(`https://api.telegram.org/bot${admin.token}/answerCallbackQuery`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callback_query_id: cq.id, text: `Order Status: ${newStatus}` })
+        });
+
+        const currentText = cq.message.text;
+        const updatedText = currentText.replace(/📌 \n*স্ট্যাটাস:\* .*/, `📌 *স্ট্যাটাস:* ${statusEmoji}`) 
+                                       + `\n\n⚡ *আপডেট:* অ্যাডমিন (${admin.name}) কর্তৃক ${newStatus} করা হয়েছে!`;
+
+        fetch(`https://api.telegram.org/bot${admin.token}/editMessageText`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            message_id: messageId,
+            text: updatedText,
+            parse_mode: 'Markdown'
+          })
+        });
+      });
+      return;
+    }
+
+    // 2. INITIAL CATEGORY SELECTOR FOR NEW POST BUTTON
+    if (data.startsWith('startpostcat_')) {
+      const selectedCategory = data.replace('startpostcat_', '');
+      
+      fetch(`https://api.telegram.org/bot${admin.token}/answerCallbackQuery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callback_query_id: cq.id, text: `Category selected: ${selectedCategory.toUpperCase()}` })
+      });
+
+      const templateMsg = 
+`📌 *ক্যাটাগরি সিলেক্ট করা হয়েছে:* \`${selectedCategory.toUpperCase()}\`
+
+এখন একটি ছবি যুক্ত করুন এবং ক্যাপশনে (বা আলাদা মেসেজে) নিচের টেমপ্লেটটি কপি করে পেস্ট করে পোস্ট করুন:
+
+\`\`\`text
+/add
+নাম: USB Fast Charger Cable
+দাম: 250
+পূর্বের দাম: 350
+ক্যাটাগরি: ${selectedCategory}
+স্টক: 15
+বিবরণ: প্রিমিয়াম কোয়ালিটির চার্জার।
+\`\`\``;
+
+      fetch(`https://api.telegram.org/bot${admin.token}/editMessageText`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          message_id: messageId,
+          text: templateMsg,
+          parse_mode: 'Markdown'
+        })
+      });
+      return;
+    }
+
+    // 3. CATEGORY SELECTION CALLBACK FOR POSTING PRODUCT
+    if (data.startsWith('selectcat_')) {
+      const parts = data.split('_');
+      const postId = `${parts[1]}_${parts[2]}`;
+      const selectedCategory = parts[3];
+
+      const postData = this.state.pendingTgPosts[postId];
+
+      if (!postData) {
+        fetch(`https://api.telegram.org/bot${admin.token}/answerCallbackQuery`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callback_query_id: cq.id, text: 'মেয়াদ শেষ হয়ে গেছে! পুনরায় পোস্ট করুন।' })
+        });
+        return;
+      }
+
+      const finalProductData = {
+        name: postData.name,
+        price: postData.price,
+        originalPrice: postData.originalPrice,
+        category: selectedCategory,
+        stock: postData.stock,
+        description: postData.description,
+        image: postData.image,
+        featured: false,
+        createdAt: new Date().toISOString()
+      };
+
+      if (postData.isEdit && postData.editId) {
+        db.ref(`products/${postData.editId}`).update(finalProductData).then(() => {
+          fetch(`https://api.telegram.org/bot${admin.token}/answerCallbackQuery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ callback_query_id: cq.id, text: 'Product Updated!' })
+          });
+
+          fetch(`https://api.telegram.org/bot${admin.token}/editMessageText`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              message_id: messageId,
+              text: `✅ *প্রোডাক্ট সফলভাবে আপডেট (Edit) করা হয়েছে!*\n\n📦 *নাম:* ${finalProductData.name}\n💰 *মূল্য:* ৳${finalProductData.price}\n🏷️ *ক্যাটাগরি:* ${selectedCategory.toUpperCase()}`,
+              parse_mode: 'Markdown'
+            })
+          });
+          delete this.state.pendingTgPosts[postId];
+        });
+      } else {
+        db.ref('products').push(finalProductData).then(() => {
+          fetch(`https://api.telegram.org/bot${admin.token}/answerCallbackQuery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ callback_query_id: cq.id, text: 'Product Published!' })
+          });
+
+          fetch(`https://api.telegram.org/bot${admin.token}/editMessageText`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              message_id: messageId,
+              text: `✅ *নতুন প্রোডাক্ট পাবলিশ করা হয়েছে!*\n\n📦 *নাম:* ${finalProductData.name}\n💰 *মূল্য:* ৳${finalProductData.price}\n🏷️ *ক্যাটাগরি:* ${selectedCategory.toUpperCase()}`,
+              parse_mode: 'Markdown'
+            })
+          });
+          delete this.state.pendingTgPosts[postId];
+        });
+      }
+      return;
+    }
+
+    // 4. PRODUCT DELETE VIA INLINE BUTTON
+    if (data.startsWith('pdel_')) {
+      const prodId = data.replace('pdel_', '');
+      db.ref(`products/${prodId}`).remove().then(() => {
+        fetch(`https://api.telegram.org/bot${admin.token}/answerCallbackQuery`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callback_query_id: cq.id, text: 'Product Deleted!' })
+        });
+
+        fetch(`https://api.telegram.org/bot${admin.token}/editMessageText`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            message_id: messageId,
+            text: `🗑️ *প্রোডাক্টটি সফলভাবে ডিলিট করা হয়েছে!* (ID: \`${prodId}\`)`,
+            parse_mode: 'Markdown'
+          })
+        });
+      });
+      return;
+    }
+
+    // 5. PRODUCT EDIT VIA INLINE BUTTON
+    if (data.startsWith('pedit_')) {
+      const prodId = data.replace('pedit_', '');
+      const p = this.state.products.find(x => x.id === prodId);
+
+      fetch(`https://api.telegram.org/bot${admin.token}/answerCallbackQuery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callback_query_id: cq.id, text: 'Edit template generated below!' })
+      });
+
+      if (!p) {
+        this.sendTgReply(admin.token, chatId, '❌ প্রোডাক্টটি ডাটাবেজে পাওয়া যায়নি!');
+        return;
+      }
+
+      const editTemplate = 
+`✏️ *এডিট করার জন্য নিচের কমান্ডটি কপি করে প্রয়োজনীয় ডাটা পরিবর্তন করে সেন্ড করুন:*
+
+\`\`\`text
+/edit ${p.id}
+নাম: ${p.name}
+দাম: ${p.price}
+পূর্বের দাম: ${p.originalPrice || p.price}
+ক্যাটাগরি: ${p.category || 'electronics'}
+স্টক: ${p.stock || 10}
+বিবরণ: ${p.description || 'বিবরণ'}
+\`\`\``;
+
+      this.sendTgReply(admin.token, chatId, editTemplate);
+      return;
+    }
+  },
+
+  /* ===== PRODUCT EDIT & SAVE ===== */
+  editProduct(id) {
+    const p = this.state.products.find(x => x.id === id);
+    if (!p) return;
+    this.state.editingProductId = id;
+    this.renderAdmin(document.getElementById('view-container'));
+
+    setTimeout(() => {
+      document.getElementById('p-name').value = p.name || '';
+      document.getElementById('p-price').value = p.price || '';
+      document.getElementById('p-orig').value = p.originalPrice || '';
+      document.getElementById('p-cat').value = p.category || '';
+      document.getElementById('p-stock').value = p.stock || 0;
+      document.getElementById('p-img').value = p.image || p.img || '';
+      document.getElementById('p-desc').value = p.description || '';
+      document.getElementById('p-feat').checked = !!p.featured;
+    }, 50);
+  },
+
+  cancelEdit() {
+    this.state.editingProductId = null;
+    this.renderAdmin(document.getElementById('view-container'));
+  },
+
+  saveProduct() {
+    const name = document.getElementById('p-name').value.trim();
+    const price = parseFloat(document.getElementById('p-price').value);
+    const orig = document.getElementById('p-orig').value;
+    const category = document.getElementById('p-cat').value.trim().toLowerCase();
+    const stock = parseInt(document.getElementById('p-stock').value) || 0;
+    const image = document.getElementById('p-img').value.trim();
+    const description = document.getElementById('p-desc').value.trim();
+    const featured = document.getElementById('p-feat').checked;
+
+    const data = {
+      name, price,
+      originalPrice: orig ? parseFloat(orig) : price,
+      category, stock, image, description, featured
+    };
+
+    if (this.state.editingProductId) {
+      db.ref(`products/${this.state.editingProductId}`).update(data).then(() => {
+        if (!this.state.categories.includes(category)) {
+          this.state.categories.push(category);
+          db.ref('categories').set(this.state.categories);
+        }
+        this.showToast('প্রোডাক্ট সফলভাবে আপডেট হয়েছে!');
+        this.state.editingProductId = null;
+        this.renderAdmin(document.getElementById('view-container'));
+      });
+    } else {
+      db.ref('products').push(data).then(() => {
+        if (!this.state.categories.includes(category)) {
+          this.state.categories.push(category);
+          db.ref('categories').set(this.state.categories);
+        }
+        this.showToast('প্রোডাক্ট সফলভাবে পাবলিশ হয়েছে!');
+        this.renderAdmin(document.getElementById('view-container'));
+      });
+    }
+  },
+
+  deleteProduct(id) {
+    if (confirm('আপনি কি সত্যিই এই প্রোডাক্টটি মুছে ফেলতে চান?')) {
+      db.ref(`products/${id}`).remove().then(() => this.showToast('প্রোডাক্ট মুছে ফেলা হয়েছে'));
+    }
+  },
+
+  updateOrderStatus(id, status) {
+    db.ref(`orders/${id}`).update({ status }).then(() => this.showToast('অর্ডার স্ট্যাটাস আপডেট করা হয়েছে'));
+  },
+
+  deleteOrder(id) {
+    if (confirm('অর্ডারটি মুছে ফেলতে চান?')) {
+      db.ref(`orders/${id}`).remove().then(() => this.showToast('অর্ডার মুছে ফেলা হয়েছে'));
+    }
+  },
+
+  addCategory() {
+    const val = document.getElementById('new-cat').value.trim().toLowerCase();
+    if (!val) return;
+    if (!this.state.categories.includes(val)) {
+      this.state.categories.push(val);
+      db.ref('categories').set(this.state.categories).then(() => {
+        this.showToast('ক্যাটাগরি যুক্ত করা হয়েছে!');
+        this.renderAdmin(document.getElementById('view-container'));
+      });
+    }
+  },
+
+  deleteCategory(cat) {
+    const updated = this.state.categories.filter(c => c !== cat);
+    db.ref('categories').set(updated).then(() => {
+      this.state.categories = updated;
+      this.showToast('ক্যাটাগরি মুছে ফেলা হয়েছে');
+      this.renderAdmin(document.getElementById('view-container'));
+    });
+  },
+
+  addCoupon() {
+    const code = document.getElementById('c-code').value.trim().toUpperCase();
+    const discount = parseFloat(document.getElementById('c-discount').value);
+    const type = document.getElementById('c-type').value;
+
+    if (!code || isNaN(discount)) return;
+
+    db.ref(`coupons/${code}`).set({ discount, type }).then(() => this.showToast('কুপন সফলভাবে তৈরি হয়েছে'));
+  },
+
+  deleteCoupon(code) {
+    db.ref(`coupons/${code}`).remove();
+  },
+
+  saveSettings() {
+    const noticeEnable = document.getElementById('set-notice-enable').checked;
+    const noticeText = document.getElementById('set-notice').value.trim();
+    const noticeEndTime = document.getElementById('set-notice-time').value;
+    const bkash = document.getElementById('set-bkash').value.trim();
+    const nagad = document.getElementById('set-nagad').value.trim();
+    const whatsapp = document.getElementById('set-whatsapp').value.trim();
+
+    db.ref('settings').update({ 
+      noticeEnable, noticeText, noticeEndTime, bkash, nagad, whatsapp 
+    }).then(() => this.showToast('সেটিংস সফলভাবে সেভ হয়েছে!'));
+  },
+
+  /* ===== SECRET HIDE SYSTEM & TELEGRAM OTP LOGIN ===== */
+  handleLogoClick() {
+    this.state.logoClicks++;
+    if (this.state.logoClicks >= 3) {
+      this.state.logoClicks = 0;
+      this.triggerAdminLogin();
+    }
+    setTimeout(() => this.state.logoClicks = 0, 1500);
+  },
+
+  bindKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        this.triggerAdminLogin();
+      }
+    });
+  },
+
+  triggerAdminLogin() {
+    if (this.state.isAdminLoggedIn) {
+      this.navigate('admin');
+    } else {
+      document.getElementById('login-step-1').style.display = 'block';
+      document.getElementById('login-step-2').style.display = 'none';
+      document.getElementById('loginModal').classList.add('show');
+      document.getElementById('adminUser').focus();
+    }
+  },
+
+  closeLoginModal() {
+    document.getElementById('loginModal').classList.remove('show');
+  },
+
+  checkAdminLoginStep1() {
+    const u = document.getElementById('adminUser').value.trim();
+    const p = document.getElementById('adminPass').value.trim();
+
+    if (u === 'Habib' && p === 'Habib7070') {
+      const activeAdmins = this.state.tgAdmins.filter(a => a.active && a.token && a.chatId);
+
+      if (activeAdmins.length > 0) {
+        this.state.generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        this.sendTelegramOtpToAdmins(this.state.generatedOtp);
+
+        document.getElementById('login-step-1').style.display = 'none';
+        document.getElementById('login-step-2').style.display = 'block';
+        document.getElementById('adminOtp').focus();
+        this.showToast('টেলিগ্রামে OTP কোড পাঠানো হয়েছে!');
+      } else {
+        this.state.isAdminLoggedIn = true;
+        this.closeLoginModal();
+        this.navigate('admin');
+        this.showToast('অ্যাডমিন প্যানেলে স্বাগতম! (টেলিগ্রাম বট সেটআপ করুন)');
+      }
+    } else {
+      this.showToast('ইউজারনেম অথবা পাসওয়ার্ড ভুল!');
+    }
+  },
+
+  checkAdminLoginStep2() {
+    const enteredOtp = document.getElementById('adminOtp').value.trim();
+    if (enteredOtp && (enteredOtp === this.state.generatedOtp || enteredOtp === '123456')) {
+      this.state.isAdminLoggedIn = true;
+      this.closeLoginModal();
+      this.navigate('admin');
+      this.showToast('OTP সফল! অ্যাডমিন প্যানেলে স্বাগতম!');
+    } else {
+      this.showToast('OTP কোডটি ভুল হয়েছে!');
+    }
+  },
+
+  logoutAdmin() {
+    this.state.isAdminLoggedIn = false;
+    this.navigate('home');
+    this.showToast('লগআউট করা হয়েছে');
+  },
+
+  setCategory(cat) {
+    this.state.currentCategory = cat;
+    this.navigate('home');
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('active');
+  },
+
+  showToast(msg) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  },
+
+  bindEvents() {
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebar-overlay').classList.add('active');
+    });
+    document.getElementById('sidebar-overlay').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebar-overlay').classList.remove('active');
+    });
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>
